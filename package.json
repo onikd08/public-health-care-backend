@@ -9,7 +9,12 @@
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate",
+    "studio": "prisma studio",
+    "push": "prisma db push",
+    "pull": "prisma db pull"
   },
   "keywords": [],
   "author": "",
