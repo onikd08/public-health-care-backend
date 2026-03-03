@@ -8,7 +8,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
-  //   trustedOrigins: [config.better_auth_url || "http://localhost:4000"],
+  //trustedOrigins: [envVars.BETTER_AUTH_URL || "http://localhost:4000"],
   //   advanced: {
   //     disableCSRFCheck: true,
   //   },
