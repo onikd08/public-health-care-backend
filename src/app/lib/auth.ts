@@ -1,4 +1,4 @@
-import { betterAuth, boolean } from "better-auth";
+import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { UserRole, UserStatus } from "../../generated/prisma/enums";
@@ -8,6 +8,10 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
+  //   trustedOrigins: [config.better_auth_url || "http://localhost:4000"],
+  //   advanced: {
+  //     disableCSRFCheck: true,
+  //   },
   emailAndPassword: {
     enabled: true,
   },
