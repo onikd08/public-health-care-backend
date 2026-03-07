@@ -1,4 +1,6 @@
+import status from "http-status";
 import { Specialty, UserRole } from "../../../generated/prisma/client";
+import AppError from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { ICreateDoctor } from "./user.interface";
@@ -15,7 +17,7 @@ const createDoctor = async (payload: ICreateDoctor) => {
     });
 
     if (!specialtyData) {
-      throw new Error("Specialty not found");
+      throw new AppError(status.NOT_FOUND, "Specialty not found");
     }
     specialties.push(specialtyData);
   }
@@ -28,7 +30,7 @@ const createDoctor = async (payload: ICreateDoctor) => {
   });
 
   if (user) {
-    throw new Error("User already exists");
+    throw new AppError(status.CONFLICT, "User already exists");
   }
 
   // register user
@@ -45,7 +47,7 @@ const createDoctor = async (payload: ICreateDoctor) => {
   });
 
   if (!registerUser.user) {
-    throw new Error("Failed to register user");
+    throw new AppError(status.BAD_REQUEST, "Failed to register user");
   }
 
   // create doctor
