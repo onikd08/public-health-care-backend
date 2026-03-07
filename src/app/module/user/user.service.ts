@@ -1,5 +1,9 @@
 import status from "http-status";
-import { Specialty, UserRole } from "../../../generated/prisma/client";
+import {
+  Specialty,
+  UserRole,
+  UserStatus,
+} from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
@@ -40,7 +44,7 @@ const createDoctor = async (payload: ICreateDoctor) => {
       email: payload.doctor.email,
       password: payload.password,
       role: UserRole.DOCTOR,
-      status: "ACTIVE",
+      status: UserStatus.ACTIVE,
       needPasswordChange: true,
       isDeleted: false,
     },
