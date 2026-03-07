@@ -3,6 +3,9 @@
 import { NextFunction, Request, Response } from "express";
 import envVars from "../../config/env";
 import status from "http-status";
+import z from "zod";
+import handleZodError from "../errorHelpers/handleZodError";
+import { IErrorResponse, IErrorSources } from "../interfaces/error.interface";
 
 export const globalErrorHandler = (
   error: any,
@@ -11,15 +14,26 @@ export const globalErrorHandler = (
   next: NextFunction,
 ) => {
   if (envVars.NODE_ENV === "development") {
-    console.log(error);
+    console.log("Error from Global Error Handler: ", error);
   }
 
-  const statusCode = status.INTERNAL_SERVER_ERROR;
-  const message = "Internal Server Error";
+  let statusCode: number = status.INTERNAL_SERVER_ERROR;
+  let message: string = "Internal Server Error";
+  const errorSources: IErrorSources[] = [];
 
-  res.status(statusCode).json({
+  if (error instanceof z.ZodError) {
+    const simplifiedError = handleZodError(error);
+    statusCode = simplifiedError.statusCode as number;
+    message = simplifiedError.message;
+    errorSources.push(...simplifiedError.errorSources);
+  }
+
+  const errorResponse: IErrorResponse = {
     success: false,
     message,
-    error: error.message,
-  });
+    errorSources,
+    error: envVars.NODE_ENV === "development" ? error : undefined,
+  };
+
+  res.status(statusCode).json(errorResponse);
 };
