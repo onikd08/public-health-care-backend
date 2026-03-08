@@ -2,7 +2,8 @@ import status from "http-status";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { IUpdateAdminPayload } from "./admin.interface";
-import { UserRole, UserStatus } from "../../../generated/prisma/enums";
+import { UserStatus } from "../../../generated/prisma/enums";
+import { IRequestUser } from "../../interfaces/requestUser.interface";
 
 const getAllAdmins = async () => {
   return await prisma.admin.findMany({
@@ -60,7 +61,7 @@ const updateAdminById = async (id: string, payload: IUpdateAdminPayload) => {
   return admin;
 };
 
-const deleteAdminById = async (id: string) => {
+const deleteAdminById = async (id: string, user: IRequestUser) => {
   const admin = await prisma.admin.findFirst({
     where: {
       id,
@@ -75,8 +76,9 @@ const deleteAdminById = async (id: string) => {
     throw new AppError(status.NOT_FOUND, "Admin not found");
   }
 
-  if (admin.user.role === UserRole.SUPER_ADMIN) {
-    throw new AppError(status.BAD_REQUEST, "Super Admin can not be deleted");
+  // check if admin is trying to delete themselves
+  if (admin.id === user.userId) {
+    throw new AppError(status.FORBIDDEN, "You can't delete yourself");
   }
 
   try {

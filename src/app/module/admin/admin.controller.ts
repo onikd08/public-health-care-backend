@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import catchAsync from "../../shared/catchAsync";
 import AdminService from "./admin.service";
 import sendResponse from "../../shared/sendResponse";
+import { IRequestUser } from "../../interfaces/requestUser.interface";
 
 const getAllAdmins = catchAsync(async (req: Request, res: Response) => {
   const admins = await AdminService.getAllAdmins();
@@ -37,7 +38,10 @@ const updateAdminById = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteAdminById = catchAsync(async (req: Request, res: Response) => {
-  const data = await AdminService.deleteAdminById(req.params.id as string);
+  const data = await AdminService.deleteAdminById(
+    req.params.id as string,
+    req.user as IRequestUser,
+  );
   sendResponse(res, {
     statusCode: 200,
     success: true,
