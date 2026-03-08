@@ -4,6 +4,7 @@ import { AuthService } from "./auth.service";
 import sendResponse from "../../shared/sendResponse";
 import status from "http-status";
 import cookieUtils from "../../utils/cookie";
+import { IRequestUser } from "../../interfaces/requestUser.interface";
 
 const registerPatient = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -39,7 +40,19 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getMe = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  const data = await AuthService.getMe(user as IRequestUser);
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User fetched successfully",
+    data,
+  });
+});
+
 export const AuthController = {
   registerPatient,
   loginUser,
+  getMe,
 };

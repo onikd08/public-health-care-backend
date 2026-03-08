@@ -78,10 +78,11 @@ export default function checkAuth(...roles: UserRole[]) {
           );
         }
 
-        const accessToken = cookieUtils.getCookie(req, "accessToken");
-        if (!accessToken) {
-          throw new AppError(status.UNAUTHORIZED, "Access token not found");
-        }
+        req.user = {
+          userId: user.id,
+          role: user.role,
+          email: user.email,
+        };
       }
 
       // access-token verification
