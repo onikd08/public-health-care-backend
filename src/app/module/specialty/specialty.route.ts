@@ -7,18 +7,18 @@ const router = Router();
 
 router.post(
   "/",
-  checkAuth(UserRole.ADMIN, UserRole.SUPERADMIN),
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   SpecialtyController.createSpecialty,
 );
 router.get("/", SpecialtyController.getAllSpecialties);
 router.delete(
   "/:id",
-  checkAuth(UserRole.ADMIN, UserRole.SUPERADMIN),
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   SpecialtyController.deleteSpecialty,
 );
 router.put(
   "/:id",
-  checkAuth(UserRole.ADMIN, UserRole.SUPERADMIN),
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   SpecialtyController.updateSpecialty,
 );
 
