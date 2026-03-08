@@ -1,0 +1,21 @@
+import { Router } from "express";
+import checkAuth from "../../middleware/checkAuth";
+import { UserRole } from "../../../generated/prisma/enums";
+import AdminController from "./admin.controller";
+
+const router = Router();
+
+router.get(
+  "/",
+  checkAuth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  AdminController.getAllAdmins,
+);
+router.get(
+  "/:id",
+  checkAuth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  AdminController.getAdminById,
+);
+
+const AdminRoutes = router;
+
+export default AdminRoutes;
