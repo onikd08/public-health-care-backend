@@ -6,6 +6,9 @@ import { IUpdateDoctorPayload } from "./doctor.interface";
 
 const getAllDoctors = async () => {
   return await prisma.doctor.findMany({
+    where: {
+      isDeleted: false,
+    },
     include: {
       user: true,
       specialties: {
@@ -18,9 +21,10 @@ const getAllDoctors = async () => {
 };
 
 const getDoctorById = async (id: string) => {
-  const doctor = await prisma.doctor.findUnique({
+  const doctor = await prisma.doctor.findFirst({
     where: {
       id,
+      isDeleted: false,
     },
     include: {
       user: true,
@@ -40,9 +44,10 @@ const getDoctorById = async (id: string) => {
 };
 
 const deleteDoctorById = async (id: string) => {
-  const doctor = await prisma.doctor.findUnique({
+  const doctor = await prisma.doctor.findFirst({
     where: {
       id,
+      isDeleted: false,
     },
   });
 
@@ -88,9 +93,10 @@ const deleteDoctorById = async (id: string) => {
 };
 
 const updateDoctorById = async (id: string, payload: IUpdateDoctorPayload) => {
-  const doctor = await prisma.doctor.findUnique({
+  const doctor = await prisma.doctor.findFirst({
     where: {
       id,
+      isDeleted: false,
     },
   });
 

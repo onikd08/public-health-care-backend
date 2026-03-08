@@ -6,6 +6,9 @@ import { UserRole, UserStatus } from "../../../generated/prisma/enums";
 
 const getAllAdmins = async () => {
   return await prisma.admin.findMany({
+    where: {
+      isDeleted: false,
+    },
     include: {
       user: true,
     },
@@ -13,9 +16,10 @@ const getAllAdmins = async () => {
 };
 
 const getAdminById = async (id: string) => {
-  const admin = await prisma.admin.findUnique({
+  const admin = await prisma.admin.findFirst({
     where: {
       id,
+      isDeleted: false,
     },
     include: {
       user: true,
@@ -30,9 +34,10 @@ const getAdminById = async (id: string) => {
 };
 
 const updateAdminById = async (id: string, payload: IUpdateAdminPayload) => {
-  const adminData = await prisma.admin.findUnique({
+  const adminData = await prisma.admin.findFirst({
     where: {
       id,
+      isDeleted: false,
     },
   });
 
@@ -56,9 +61,10 @@ const updateAdminById = async (id: string, payload: IUpdateAdminPayload) => {
 };
 
 const deleteAdminById = async (id: string) => {
-  const admin = await prisma.admin.findUnique({
+  const admin = await prisma.admin.findFirst({
     where: {
       id,
+      isDeleted: false,
     },
     include: {
       user: true,
