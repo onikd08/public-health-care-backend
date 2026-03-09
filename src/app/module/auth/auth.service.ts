@@ -9,7 +9,6 @@ import jwtUtils from "../../utils/jwt";
 import envVars from "../../../config/env";
 import { JwtPayload } from "jsonwebtoken";
 import { IChangePasswordPayload, IRegisterPatient } from "./auth.interface";
-import { hashPassword, verifyPassword } from "better-auth/crypto";
 
 const registerPatient = async (payload: IRegisterPatient) => {
   const { name, email, password } = payload;
@@ -214,8 +213,6 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
   };
 };
 
-/*
-
 const changePassword = async (
   payload: IChangePasswordPayload,
   sessionToken: string,
@@ -233,19 +230,17 @@ const changePassword = async (
     throw new AppError(status.UNAUTHORIZED, "Session token not found");
   }
 
-
-    const data = await auth.api.changePassword({
-      body: {
-        currentPassword: payload.currentPassword,
-        newPassword: payload.newPassword,
-        revokeOtherSessions: true,
-      },
-      headers: new Headers({
-        Authorization: `Bearer ${sessionToken}`,
-      }),
-    });
-    console.log("here is the data", data);
-  
+  const data = await auth.api.changePassword({
+    body: {
+      currentPassword: payload.currentPassword,
+      newPassword: payload.newPassword,
+      revokeOtherSessions: true,
+    },
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+  console.log("here is the data", data);
 
   if (session.user.needPasswordChange) {
     await prisma.user.update({
@@ -284,7 +279,7 @@ const changePassword = async (
   };
 };
 
-*/
+/*
 
 const changePassword = async (
   payload: IChangePasswordPayload,
@@ -366,16 +361,13 @@ const changePassword = async (
   };
 };
 
+*/
+
 const logoutUser = async (sessionToken: string) => {
   const result = await auth.api.signOut({
     headers: new Headers({
       Authorization: `Bearer ${sessionToken}`,
     }),
-  });
-  await prisma.session.delete({
-    where: {
-      token: sessionToken,
-    },
   });
   return result;
 };
