@@ -225,12 +225,12 @@ const changePassword = async (
       user: true,
     },
   });
-  console.log(session);
+
   if (!session) {
     throw new AppError(status.UNAUTHORIZED, "Session token not found");
   }
 
-  const data = await auth.api.changePassword({
+  await auth.api.changePassword({
     body: {
       currentPassword: payload.currentPassword,
       newPassword: payload.newPassword,
@@ -240,7 +240,6 @@ const changePassword = async (
       Authorization: `Bearer ${sessionToken}`,
     }),
   });
-  console.log("here is the data", data);
 
   if (session.user.needPasswordChange) {
     await prisma.user.update({
@@ -273,9 +272,15 @@ const changePassword = async (
     name: session.user.name,
   });
 
+  const user = await prisma.user.findUnique({
+    where: {
+      id: session.user.id,
+    },
+  });
   return {
     accessToken,
     refreshToken,
+    ...user,
   };
 };
 
