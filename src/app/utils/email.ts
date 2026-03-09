@@ -8,7 +8,7 @@ import ejs from "ejs";
 
 // Create a transporter using Ethereal test credentials.
 // For production, replace with your actual SMTP server details.
-export const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   host: envVars.EMAIL_SENDER.SMTP_HOST,
   port: Number(envVars.EMAIL_SENDER.SMTP_PORT),
   secure: true,
