@@ -8,12 +8,8 @@ import { IRequestUser } from "../../interfaces/requestUser.interface";
 import jwtUtils from "../../utils/jwt";
 import envVars from "../../../config/env";
 import { JwtPayload } from "jsonwebtoken";
-
-interface IRegisterPatient {
-  name: string;
-  email: string;
-  password: string;
-}
+import { IChangePasswordPayload, IRegisterPatient } from "./auth.interface";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 
 const registerPatient = async (payload: IRegisterPatient) => {
   const { name, email, password } = payload;
@@ -94,7 +90,7 @@ const loginUser = async (email: string, password: string) => {
   }
 
   if (data.user.isDeleted) {
-    throw new AppError(status.NOT_FOUND, "User is not Deleted");
+    throw new AppError(status.NOT_FOUND, "User is Deleted");
   }
 
   const accessToken = tokenUtils.getAccessToken({
@@ -218,9 +214,177 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
   };
 };
 
+/*
+
+const changePassword = async (
+  payload: IChangePasswordPayload,
+  sessionToken: string,
+) => {
+  const session = await prisma.session.findUnique({
+    where: {
+      token: sessionToken,
+    },
+    include: {
+      user: true,
+    },
+  });
+  console.log(session);
+  if (!session) {
+    throw new AppError(status.UNAUTHORIZED, "Session token not found");
+  }
+
+
+    const data = await auth.api.changePassword({
+      body: {
+        currentPassword: payload.currentPassword,
+        newPassword: payload.newPassword,
+        revokeOtherSessions: true,
+      },
+      headers: new Headers({
+        Authorization: `Bearer ${sessionToken}`,
+      }),
+    });
+    console.log("here is the data", data);
+  
+
+  if (session.user.needPasswordChange) {
+    await prisma.user.update({
+      where: {
+        id: session.user.id,
+      },
+      data: {
+        needPasswordChange: false,
+      },
+    });
+  }
+
+  const accessToken = tokenUtils.getAccessToken({
+    userId: session.user.id,
+    email: session.user.email,
+    role: session.user.role,
+    status: session.user.status,
+    isDeleted: session.user.isDeleted,
+    emailVerified: session.user.emailVerified,
+    name: session.user.name,
+  });
+
+  const refreshToken = tokenUtils.getRefreshToken({
+    userId: session.user.id,
+    email: session.user.email,
+    role: session.user.role,
+    status: session.user.status,
+    isDeleted: session.user.isDeleted,
+    emailVerified: session.user.emailVerified,
+    name: session.user.name,
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
+*/
+
+const changePassword = async (
+  payload: IChangePasswordPayload,
+  sessionToken: string,
+) => {
+  // look up the session so we know the user
+  const session = await prisma.session.findUnique({
+    where: { token: sessionToken },
+    include: { user: true },
+  });
+
+  if (!session) {
+    throw new AppError(status.UNAUTHORIZED, "Session token not found");
+  }
+
+  // look up the credential account for this user and read the password hash
+  const credentialAccount = await prisma.account.findFirst({
+    where: {
+      userId: session.user.id,
+      providerId: "credential",
+    },
+    select: { password: true, id: true },
+  });
+  if (!credentialAccount || !credentialAccount.password) {
+    throw new AppError(status.BAD_REQUEST, "Unable to verify current password");
+  }
+
+  const validPassword = await verifyPassword({
+    hash: credentialAccount.password,
+    password: payload.currentPassword,
+  });
+  if (!validPassword) {
+    throw new AppError(status.BAD_REQUEST, "Current password is incorrect");
+  }
+
+  // hash the new password and update the account record directly
+  const newHash = await hashPassword(payload.newPassword);
+  await prisma.account.update({
+    where: { id: credentialAccount.id },
+    data: { password: newHash },
+  });
+
+  // revoke other sessions if requested
+  if (payload.revokeOtherSessions) {
+    await prisma.session.deleteMany({
+      where: {
+        userId: session.user.id,
+        token: { not: session.token },
+      },
+    });
+  }
+
+  // produce fresh access/refresh tokens for the caller
+  const accessToken = tokenUtils.getAccessToken({
+    userId: session.user.id,
+    email: session.user.email,
+    role: session.user.role,
+    status: session.user.status,
+    isDeleted: session.user.isDeleted,
+    emailVerified: session.user.emailVerified,
+    name: session.user.name,
+  });
+
+  const refreshToken = tokenUtils.getRefreshToken({
+    userId: session.user.id,
+    email: session.user.email,
+    role: session.user.role,
+    status: session.user.status,
+    isDeleted: session.user.isDeleted,
+    emailVerified: session.user.emailVerified,
+    name: session.user.name,
+  });
+
+  // mirror the shape of the original API response; token field not needed
+  return {
+    accessToken,
+    refreshToken,
+    status: true,
+  };
+};
+
+const logoutUser = async (sessionToken: string) => {
+  const result = await auth.api.signOut({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+  await prisma.session.delete({
+    where: {
+      token: sessionToken,
+    },
+  });
+  return result;
+};
+
 export const AuthService = {
   registerPatient,
   loginUser,
   getMe,
   getNewToken,
+  logoutUser,
+  changePassword,
 };

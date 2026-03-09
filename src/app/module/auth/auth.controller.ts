@@ -11,9 +11,11 @@ const registerPatient = catchAsync(async (req: Request, res: Response) => {
   const data = await AuthService.registerPatient(payload);
 
   const { accessToken, refreshToken, token: betterAuthToken } = data;
+
   cookieUtils.setAccessTokenCookie(res, accessToken);
   cookieUtils.setRefreshTokenCookie(res, refreshToken);
   cookieUtils.setBetterAuthSessionCookie(res, betterAuthToken as string);
+
   sendResponse(res, {
     message: "Patient registered successfully",
     success: true,
@@ -73,9 +75,55 @@ const getNewToken = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const logoutUser = catchAsync(async (req: Request, res: Response) => {
+  const sessionToken = cookieUtils.getCookie(req, "better-auth.session_token");
+  const data = await AuthService.logoutUser(sessionToken);
+
+  cookieUtils.clearCookie(res, "better-auth.session_token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  });
+  cookieUtils.clearCookie(res, "refreshToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  });
+  cookieUtils.clearCookie(res, "accessToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  });
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User logged out successfully",
+    data,
+  });
+});
+
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const sessionToken = cookieUtils.getCookie(req, "better-auth.session_token");
+
+  const data = await AuthService.changePassword(req.body, sessionToken);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Password changed successfully",
+    data,
+  });
+});
+
 export const AuthController = {
   registerPatient,
   loginUser,
   getMe,
   getNewToken,
+  logoutUser,
+  changePassword,
 };
