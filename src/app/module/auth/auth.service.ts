@@ -468,6 +468,17 @@ const resetPassword = async (
     },
   });
 
+  if (user.needPasswordChange) {
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        needPasswordChange: false,
+      },
+    });
+  }
+
   await prisma.session.deleteMany({
     where: {
       userId: user.id,
