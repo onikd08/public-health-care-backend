@@ -5,6 +5,7 @@ import { UserRole, UserStatus } from "../../generated/prisma/enums";
 import { bearer, emailOTP } from "better-auth/plugins";
 import { sendEmail } from "../utils/email";
 import envVars from "../../config/env";
+import { env } from "process";
 
 // If your Prisma file is located elsewhere, you can change the path
 
@@ -14,10 +15,13 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
-  //trustedOrigins: [envVars.BETTER_AUTH_URL || "http://localhost:4000"],
-  //   advanced: {
-  //     disableCSRFCheck: true,
-  //   },
+  redirectURLs: {
+    signIn: `${envVars.BETTER_AUTH_URL}/api/v1/auth/google/success`,
+  },
+  trustedOrigins: [
+    envVars.BETTER_AUTH_URL || "http://localhost:4000",
+    envVars.FRONTEND_URL || "http://localhost:3000",
+  ],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,

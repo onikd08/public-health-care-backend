@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 import envVars from "../../config/env";
 import AppError from "../errorHelpers/AppError";
 import status from "http-status";
-import path from "node:path";
+import path from "path";
 import ejs from "ejs";
 
 // Create a transporter using Ethereal test credentials.
