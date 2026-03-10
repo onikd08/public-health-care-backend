@@ -230,6 +230,20 @@ const changePassword = async (
     throw new AppError(status.UNAUTHORIZED, "Session token not found");
   }
 
+  const credentialAccount = await prisma.account.findFirst({
+    where: {
+      userId: session.user.id,
+      providerId: "credential",
+    },
+  });
+
+  if (!credentialAccount) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Password change is not available for social login users",
+    );
+  }
+
   await auth.api.changePassword({
     body: {
       currentPassword: payload.currentPassword,
@@ -378,6 +392,30 @@ const logoutUser = async (sessionToken: string) => {
 };
 
 const verifyEmail = async (email: string, otp: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
+  const credentialAccount = await prisma.account.findFirst({
+    where: {
+      userId: user.id,
+      providerId: "credential",
+    },
+  });
+
+  if (!credentialAccount) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Password change is not available for social login users",
+    );
+  }
+
   const result = await auth.api.verifyEmailOTP({
     body: {
       email,
@@ -423,6 +461,20 @@ const forgetPassword = async (email: string) => {
     throw new AppError(status.NOT_FOUND, "User is Deleted");
   }
 
+  const credentialAccount = await prisma.account.findFirst({
+    where: {
+      userId: user.id,
+      providerId: "credential",
+    },
+  });
+
+  if (!credentialAccount) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Password change is not available for social login users",
+    );
+  }
+
   await auth.api.requestPasswordResetEmailOTP({
     body: {
       email,
@@ -443,6 +495,20 @@ const resetPassword = async (
 
   if (!user) {
     throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
+  const credentialAccount = await prisma.account.findFirst({
+    where: {
+      userId: user.id,
+      providerId: "credential",
+    },
+  });
+
+  if (!credentialAccount) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Password change is not available for social login users",
+    );
   }
 
   if (!user.emailVerified) {

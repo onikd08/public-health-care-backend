@@ -5,7 +5,6 @@ import { UserRole, UserStatus } from "../../generated/prisma/enums";
 import { bearer, emailOTP } from "better-auth/plugins";
 import { sendEmail } from "../utils/email";
 import envVars from "../../config/env";
-import { env } from "process";
 
 // If your Prisma file is located elsewhere, you can change the path
 
